@@ -7,7 +7,7 @@ spring:
     name: test
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
-      url: jdbc:mysql://localhost:3306/nj-1906?serverTimezone=GMT%2B8
+      url: jdbc:mysql://localhost:3306/nj-1906-meeting?serverTimezone=GMT%2B8
       driver-class-name: com.mysql.jdbc.Driver
       username: root
       password: root
@@ -27,6 +27,18 @@ spring:
   thymeleaf:
     cache: false
     mode: LEGACYHTML5
+  redis:
+    port: 6379
+    password: 123456
+    host: 192.168.46.136
+    lettuce:
+      pool:
+        max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
+        max-idle: 8 # 连接池中的最大空闲连接
+        min-idle: 0 # 连接池中的最小空闲连接
+        max-wait: 1000 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+      shutdown-timeout: 100   # 关闭超时时间
+    database: 10
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.qfjy.entity.po

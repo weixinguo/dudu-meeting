@@ -8,6 +8,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.qfjy.project.api.accessToken.AccessTokenRedis;
+import com.qfjy.project.api.hitokoto.HitokotoUtil;
+import com.qfjy.project.api.tuling.TulingUtil;
+import com.qfjy.project.api.userinfo.UserInfoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +36,14 @@ import com.qfjy.project.weixin.bean.resp.TextMessage;
 
 @Service
 public class CoreService {
+
+	/**图灵API 智能回复机器人接口 */
+	@Autowired
+	private TulingUtil tulingUtil;
+
+	/** 微信收集个人信息*/
+	@Autowired
+	private UserInfoUtil userInfoUtil;
 
 
 	/**
@@ -60,7 +72,7 @@ public class CoreService {
 			TextMessage textMessage = new TextMessage();
 			textMessage.setToUserName(fromUserName);
 			textMessage.setFromUserName(toUserName);
-			textMessage.setCreateTime(new Date().getTime());
+			textMessage.setCreateTime(System.currentTimeMillis());
 			textMessage.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT);
 			textMessage.setFuncFlag(0);
 			// 由于href属性值必须用双引号引起，这与字符串本身的双引号冲突，所以要转义
@@ -79,13 +91,15 @@ public class CoreService {
 			NewsMessage newsMessage = new NewsMessage();
 			newsMessage.setToUserName(fromUserName);
 			newsMessage.setFromUserName(toUserName);
-			newsMessage.setCreateTime(new Date().getTime());
+			newsMessage.setCreateTime(System.currentTimeMillis());
 			newsMessage.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
 			newsMessage.setFuncFlag(0);
 
 			// 文本消息
 			if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_TEXT)) {
-				respContent = "您发送的是文本消息！";
+				//respContent = "您发送的是文本消息！";
+				//respContent= HitokotoUtil.getHitokoto();
+				respContent=tulingUtil.invoke(content);
 			}
 			// 图片消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
@@ -109,13 +123,19 @@ public class CoreService {
 				String eventType = requestMap.get("Event");
 				// 订阅
 				if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {
-					
+
+					userInfoUtil.userInfoService(fromUserName);
+
 					respContent = "欢迎关注微信公众号";
 				}
 				// 取消订阅
 				else if (eventType.equals(MessageUtil.EVENT_TYPE_UNSUBSCRIBE)) {
 					// TODO 取消订阅后用户再收不到公众号发送的消息，因此不需要回复消息
 				}
+				else if(eventType.equals(MessageUtil.REQ_MESSAGE_TYPE_LOCATION)){
+
+				}
+
 				// 自定义菜单点击事件
 				else if (eventType.equals(MessageUtil.EVENT_TYPE_CLICK)) {
 					// 事件KEY值，与创建自定义菜单时指定的KEY值对应
